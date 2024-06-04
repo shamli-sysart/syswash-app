@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "197388954178",
+    "project_id": "syswash-69645",
+    "storage_bucket": "syswash-69645.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197388954178:android:77e927b9b7314e17bb9bdb",
+        "android_client_info": {
+          "package_name": "com.example.syswash"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuFwzH_ahcpiT9VYtXj8yIx0GVqwhiQwI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
