@@ -32,9 +32,13 @@ Route onGenerateRoute(RouteSettings settings) {
     case "/pickupOrderListing":
       return _createPageRoute((context) => const PickupOrderListing());
     case "/customer_details":
-      return _createPageRoute((context) => CustomerDetailsOrder(
-        pickupassgnId: settings.arguments as String?,
-      ));
+      return _createPageRoute((context) {
+        final Map<String, dynamic>? args = settings.arguments as Map<String, dynamic>?;
+        return CustomerDetailsOrder(
+          pickupassgnId: args?['pickupassgnId'] as String?,
+          pickupCustomerId: args?['pickupCustomerId'] as String?,
+        );
+      });
     case "/delivery":
       return _createPageRoute((context) => const Delivery());
     case "/profile":
@@ -44,13 +48,19 @@ Route onGenerateRoute(RouteSettings settings) {
       ));
 
 
-
-
-
     case "/customDetailsDelivery":
-      return _createPageRoute((context) => CustomerDetailsDelivery(
-        orderId: settings.arguments as String?,
-      ));
+    return _createPageRoute((context) {
+    final Map<String, dynamic>? args = settings.arguments as Map<String, dynamic>?;
+     return CustomerDetailsDelivery(
+      orderId: args?['deliveryInvoiceNo'] as String?,
+       deliveryCustomerId: args?['deliveryCustomerId'] as String?,
+  );
+    });
+
+
+      // return _createPageRoute((context) => CustomerDetailsDelivery(
+      //   orderId: settings.arguments as String?,
+      // ));
     case "/history":
       return _createPageRoute((context) => const History());
     default:

@@ -191,16 +191,43 @@ class _DeliveryState extends State<Delivery> {
                               ],
                             ),
                             child: GestureDetector(
+
+                              // onTap: () {
+                              //   Navigator.pushNamed(
+                              //     context,
+                              //     "/customer_details",
+                              //     arguments: {
+                              //       'pickupassgnId': pickuporders?[index].pickupassgnId.toString(),
+                              //       'pickupCustomerId': pickuporders?[index].pickupCustomerId.toString() ?? 'Unknown',
+                              //     },
+                              //   );
+                              // },
+                              //
                               onTap: () {
                                 Navigator.pushNamed(
                                   context,
                                   "/customDetailsDelivery",
-                                  arguments: pickuporders?[index]
-                                          .deliveryInvoiceNo
-                                          .toString() ??
-                                      'Unknown',
+                                  arguments:{
+                                    'deliveryInvoiceNo' : pickuporders?[index].deliveryInvoiceNo.toString() ,
+                                     'deliveryCustomerId' : pickuporders?[index].deliveryCustomerId.toString() ?? 'Unknown',
+
+
+                                }
+
+
                                 );
                               },
+
+
+
+                              // onTap: () {
+                              //   Navigator.pushNamed(
+                              //     context,
+                              //     "/customDetailsDelivery",
+                              //     arguments: pickuporders?[index].deliveryInvoiceNo.toString() ?? 'Unknown',
+                              //
+                              //   );
+                              // },
                               child: Card(
                                 child: Padding(
                                   padding: EdgeInsets.all(8.0),

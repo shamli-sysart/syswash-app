@@ -15,7 +15,8 @@ import 'package:geocoding/geocoding.dart' as geocoding; // Import geocoding pack
 import 'package:flutter_svg/flutter_svg.dart';
 class CustomerDetailsDelivery extends StatefulWidget {
   final String? orderId;
-  const CustomerDetailsDelivery({super.key,this.orderId});
+  final String? deliveryCustomerId;
+  const CustomerDetailsDelivery({super.key,this.orderId,this.deliveryCustomerId});
 
   @override
   State<CustomerDetailsDelivery> createState() => _CustomerDetailsDeliveryState();
@@ -38,10 +39,16 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
   String LoggerUsername = "";
   String formateddate = "";
 
+
+  List<dynamic> customerDataList = [];
+  String  deliveryCustomerId = '';
+
   @override
   void initState() {
     super.initState();
     orderId = widget.orderId ?? '';
+    deliveryCustomerId = widget.deliveryCustomerId ?? '';
+
     getUserToken();
     var currentTime = DateTime.now();
     formatedtime = '${currentTime.hour.toString().padLeft(2, '0')}:${currentTime.minute.toString().padLeft(2, '0')}';
@@ -53,9 +60,11 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
   Future<void> getUserToken() async {
     AppSp appSp = AppSp();
     userToken = await appSp.getToken();
+    await fetchCustomerDiscount( deliveryCustomerId );
     companyCode = await appSp.getCompanyCode();
     LoggerUsername = await appSp.getUserName();
-    orderDetails(userToken,orderId);
+    await orderDetails(userToken,orderId);
+
   }
   void processResponseData(Map<String, dynamic> responseData) {
     this.responseData = responseData;
@@ -95,6 +104,30 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
 
 
 
+  }
+  Future<void> fetchCustomerDiscount(String cus_id) async {
+    final url = 'https://be.syswash.net/api/syswash/customerdetails/$cus_id?code=A';
+    try {
+      final response = await http.get(Uri.parse(url),
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Bearer $userToken"
+        },);
+      if (response.statusCode == 200) {
+        final customerDetails = jsonDecode(response.body);
+
+        // Assuming you have a state variable to store the discount
+        setState(() {
+          customerDataList.add(customerDetails);
+        });
+
+        print('Customer Data List: $customerDataList'); // Debug print
+      } else {
+        print('Failed to load customer details, status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching customer details: $e');
+    }
   }
 
   Future<void> orderDetails(String userToken, String pickupOrderId) async {
@@ -337,7 +370,9 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
 
                     Padding(
                       padding: const EdgeInsets.all(10),
-                      child: Column(
+                      child: customerDataList.isEmpty
+                          ? Center(child: Text(''))
+                          : Column(
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,7 +391,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['orderDate']}",
+                                      customerDataList[0]['cusCode'],
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontFamily: GoogleFonts.openSans().fontFamily,
@@ -381,7 +416,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['orderDate']}",
+                                      customerDataList[0]['area'],
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -412,7 +447,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['deliveryDate']}",
+                                      customerDataList[0]['hotel'],
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -436,7 +471,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['status']}",
+                                      customerDataList[0]['refNo'],
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -467,7 +502,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['customerStreet']}",
+                                      customerDataList[0]['streetNo'],
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontFamily: GoogleFonts.openSans().fontFamily,
@@ -492,7 +527,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['customerRoomNo']}",
+                                      customerDataList[0]['villaNumber'],
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -547,7 +582,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['customerAddress']}",
+                                      customerDataList[0]['fragrance'],
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontFamily: GoogleFonts.openSans().fontFamily,
@@ -596,7 +631,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                       ),
                                     ),
                                     Text(
-                                      "${responseData['totalAmount']}",
+                                      '0.0',
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontFamily: GoogleFonts.openSans().fontFamily,
@@ -998,7 +1033,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                   children: [
                                     Container(
                                       width: 400,
-                                      height: 450,
+                                      height: 220,
                                       child: SingleChildScrollView(
                                         child: Padding(
                                           padding: const EdgeInsets.all(30.0),
@@ -1019,7 +1054,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                   fontSize: 26.0,
                                                 ),
                                               ),
-                                              SizedBox(height: 50),
+                                              SizedBox(height: 25),
                                               Text(
                                                 "Update The Product Status",
                                                 style: TextStyle(
@@ -1029,7 +1064,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                       .fontFamily,
                                                 ),
                                               ),
-                                              SizedBox(height: 50),
+                                              SizedBox(height: 25),
                                               Row(
                                                 mainAxisAlignment:
                                                 MainAxisAlignment
@@ -1072,7 +1107,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                                       width:
                                                                       400,
                                                                       height:
-                                                                      450,
+                                                                      220,
                                                                       child:
                                                                       SingleChildScrollView(
                                                                         child:
@@ -1088,7 +1123,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                                             CrossAxisAlignment.start,
                                                                             children: [
                                                                               Text(
-                                                                                'pay Now',
+                                                                                'Pay Now',
                                                                                 style: TextStyle(
                                                                                   fontWeight: FontWeight.bold,
                                                                                   color: Color(0xFF301C93),
@@ -1096,7 +1131,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                                                   fontSize: 23.0,
                                                                                 ),
                                                                               ),
-                                                                              SizedBox(height: 50),
+                                                                              SizedBox(height: 25),
                                                                               Row(
                                                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                                 children: [
@@ -1113,7 +1148,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                                                       ),
                                                                                       SizedBox(height: 10),
                                                                                       Text(
-                                                                                        "00123 ",
+                                                                                        "${responseData['orderId']}",
                                                                                         style: TextStyle(
                                                                                           fontSize: 18,
                                                                                           fontFamily: GoogleFonts.openSans().fontFamily,
@@ -1134,7 +1169,7 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                                                       ),
                                                                                       SizedBox(height: 10),
                                                                                       Text(
-                                                                                        "20 ",
+                                                                                          "${responseData['totalAmount']}",
                                                                                         style: TextStyle(
                                                                                           fontSize: 18,
                                                                                           fontFamily: GoogleFonts.openSans().fontFamily,
@@ -1144,25 +1179,25 @@ class _CustomerDetailsDeliveryState extends State<CustomerDetailsDelivery> {
                                                                                   ),
                                                                                 ],
                                                                               ),
-                                                                              SizedBox(height: 20),
-                                                                              TextField(
-                                                                                decoration: InputDecoration(
-                                                                                  border: InputBorder.none,
-                                                                                  hintText: 'Amount',
-                                                                                  hintStyle: TextStyle(color: Color(0xFFC5C5C5)),
-                                                                                  fillColor: Color(0xFFF9F9F9),
-                                                                                  filled: true,
-                                                                                  contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-                                                                                  enabledBorder: OutlineInputBorder(
-                                                                                    borderSide: BorderSide(color: Colors.transparent),
-                                                                                    borderRadius: BorderRadius.circular(15.0),
-                                                                                  ),
-                                                                                  focusedBorder: OutlineInputBorder(
-                                                                                    borderSide: BorderSide(color: Colors.transparent),
-                                                                                    borderRadius: BorderRadius.circular(15.0),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
+                                                                              // SizedBox(height: 20),
+                                                                              // TextField(
+                                                                              //   decoration: InputDecoration(
+                                                                              //     border: InputBorder.none,
+                                                                              //     hintText: 'Amount',
+                                                                              //     hintStyle: TextStyle(color: Color(0xFFC5C5C5)),
+                                                                              //     fillColor: Color(0xFFF9F9F9),
+                                                                              //     filled: true,
+                                                                              //     contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+                                                                              //     enabledBorder: OutlineInputBorder(
+                                                                              //       borderSide: BorderSide(color: Colors.transparent),
+                                                                              //       borderRadius: BorderRadius.circular(15.0),
+                                                                              //     ),
+                                                                              //     focusedBorder: OutlineInputBorder(
+                                                                              //       borderSide: BorderSide(color: Colors.transparent),
+                                                                              //       borderRadius: BorderRadius.circular(15.0),
+                                                                              //     ),
+                                                                              //   ),
+                                                                              // ),
                                                                               SizedBox(height: 20),
                                                                               Row(
                                                                                 mainAxisAlignment: MainAxisAlignment.end,

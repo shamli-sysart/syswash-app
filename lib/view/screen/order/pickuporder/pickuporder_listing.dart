@@ -178,7 +178,10 @@ class _PickupOrderListingState extends State<PickupOrderListing> {
                                 Navigator.pushNamed(
                                   context,
                                   "/customer_details",
-                                  arguments: pickuporders?[index].pickupassgnId.toString() ?? 'Unknown',
+                                  arguments: {
+                                    'pickupassgnId': pickuporders?[index].pickupassgnId.toString(),
+                                    'pickupCustomerId': pickuporders?[index].pickupCustomerId.toString() ?? 'Unknown',
+                                  },
                                 );
                               },
                               child: Card(

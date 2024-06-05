@@ -21,8 +21,9 @@ import 'package:geocoding/geocoding.dart' as geocoding; // Import geocoding pack
 
 class CustomerDetailsOrder extends StatefulWidget {
   final String? pickupassgnId;
+  final String? pickupCustomerId;
 
-  const CustomerDetailsOrder({Key? key, this.pickupassgnId}) : super(key: key);
+  const CustomerDetailsOrder({Key? key, this.pickupassgnId, this.pickupCustomerId}) : super(key: key);
 
   @override
   State<CustomerDetailsOrder> createState() => _CustomerDetailsOrderState();
@@ -80,6 +81,11 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
 
   int customerDiscount = 0;
 
+  List<dynamic> customerDataList = [];
+
+
+  String pickupCustomerId = '';
+
   //pricelist:
 
   List<Map<String, dynamic>> priceListServiceCloth = [];
@@ -98,11 +104,44 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
   }
 
   void saveDataToClothDate(Map<String, dynamic> clothData) {
-    setState(() {
-      clothdate.add(clothData);
-      updateCounts();
-    });
+    int newQuantity;
+    try {
+      newQuantity = int.parse(clothData['qnty']);
+    } catch (e) {
+      print('Error parsing quantity: $e');
+      return;
+    }
+    int index = clothdate.indexWhere((item) =>
+    item['service'] == clothData['service'] &&
+        item['billing'] == clothData['billing'] &&
+        item['clothName'] == clothData['clothName']);
+
+    if (index != -1) {
+      setState(() {
+        int existingQuantity;
+        try {
+          existingQuantity = int.parse(clothdate[index]['qnty']);
+        } catch (e) {
+          print('Error parsing existing quantity: $e');
+          return;
+        }
+        clothdate[index]['qnty'] = (existingQuantity + newQuantity).toString();
+        updateCounts();
+      });
+    } else {
+      setState(() {
+        clothData['qnty'] = newQuantity.toString();
+        clothdate.add(clothData);
+        updateCounts();
+      });
+    }
   }
+  // void saveDataToClothDate(Map<String, dynamic> clothData) {
+  //   setState(() {
+  //     clothdate.add(clothData);
+  //     updateCounts();
+  //   });
+  // }
 
   void removeDataFromClothDate(int index) {
     setState(() {
@@ -138,6 +177,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
   void initState() {
     super.initState();
     pickupassgnId = widget.pickupassgnId ?? '';
+    pickupCustomerId = widget.pickupCustomerId ?? '';
     _customerDetailsBloc = CustomerDetailsBloc(ApiService());
     getUserToken();
 
@@ -164,6 +204,8 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
 
     _customerDetailsBloc
         .add(CustomerDetailsApiEvent(userToken, companyCode, pickupassgnId));
+
+    fetchCustomerDiscount(pickupCustomerId);
   }
 
   @override
@@ -560,7 +602,9 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(20),
-                              child: Column(
+                              child: customerDataList.isEmpty
+                                  ? Center(child: Text(''))
+                                  : Column(
                                 children: [
                                   Row(
                                     crossAxisAlignment:
@@ -583,7 +627,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              "${responseData['orderDate']}",
+                                              customerDataList[0]['cusCode'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontFamily:
@@ -613,7 +657,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              "${responseData['orderDate']}",
+                                              customerDataList[0]['area'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -650,7 +694,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              "${responseData['deliveryDate']}",
+                                              customerDataList[0]['hotel'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -677,7 +721,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              '${state.response.pickupstatus}',
+                                              customerDataList[0]['refNo'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -714,7 +758,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              "${responseData['customerStreet']}",
+                                              customerDataList[0]['streetNo'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontFamily:
@@ -744,7 +788,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              "${responseData['customerRoomNo']}",
+                                              customerDataList[0]['villaNumber'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -808,7 +852,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              "${responseData['customerAddress']}",
+                                              customerDataList[0]['fragrance'],
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontFamily:
@@ -865,7 +909,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                               ),
                                             ),
                                             Text(
-                                              "${responseData['totalAmount']}",
+                                             '0.0',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontFamily:
@@ -1664,13 +1708,36 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                         itemCount: clothdate.length,
                         itemBuilder: (context, index) {
                           var clothData = clothdate[index];
+                          int quantity = int.tryParse(clothData['qnty'] ?? '') ?? 0; // Convert String to int
 
-                          if (clothdate.isEmpty) {
-                            print('emplty');
+                          void incrementQuantity() {
+                            setState(() {
+                              quantity++;
+                              clothData['qnty'] = quantity.toString(); // Convert back to String for storage
+                            });
                           }
+
+                          void decrementQuantity() {
+                            setState(() {
+                              if (quantity > 0) {
+                                quantity--;
+                                if (quantity == 0) {
+                                  removeDataFromClothDate(index);
+                                } else {
+                                  clothData['qnty'] = quantity.toString(); // Convert back to String for storage
+                                }
+                              }
+                            });
+                          }
+
+                          void removeItem() {
+                            setState(() {
+                              removeDataFromClothDate(index);
+                            });
+                          }
+
                           return Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 0),
+                            padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
                             child: Card(
                               child: ListTile(
                                 leading: Image.network(
@@ -1689,30 +1756,111 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                   },
                                 ),
                                 title: Text(
-                                  clothData['clothName'],
+                                  '${clothData['clothName']}',
                                   style: TextStyle(
-                                    fontFamily:
-                                        GoogleFonts.openSans().fontFamily,
+                                    fontFamily: GoogleFonts.openSans().fontFamily,
+                                      fontSize: 14
                                   ),
                                 ),
                                 subtitle: Text(
-                                  clothData['arabicName'],
+                                 // clothData['billing'],
+                                  '${clothData['service']}, ${clothData['billing']}',
                                   style: TextStyle(
-                                    fontFamily:
-                                        GoogleFonts.openSans().fontFamily,
+                                    fontFamily: GoogleFonts.openSans().fontFamily,
                                   ),
                                 ),
-                                trailing: IconButton(
-                                  icon: Icon(Icons.delete),
-                                  onPressed: () {
-                                    removeDataFromClothDate(index);
-                                  },
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.remove),
+                                      onPressed: decrementQuantity,
+                                      color: Color(0xFF301C93), // Set the color to red
+                                    ),
+                                    Text(
+                                      '$quantity',
+                                      style: TextStyle(
+                                        fontFamily: GoogleFonts.openSans().fontFamily,
+                                        fontWeight: FontWeight.bold, // Set font weight to bold
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.add),
+                                      onPressed: incrementQuantity,
+                                      color: Color(0xFF301C93), // Set the color to red
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: removeItem,
+                                      color: Colors.red, // Set the color to red
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           );
                         },
                       ),
+
+
+
+
+
+
+                      // ListView.builder(
+                      //   shrinkWrap: true,
+                      //   itemCount: clothdate.length,
+                      //   itemBuilder: (context, index) {
+                      //     var clothData = clothdate[index];
+                      //
+                      //     if (clothdate.isEmpty) {
+                      //       print('emplty');
+                      //     }
+                      //     return Padding(
+                      //       padding: EdgeInsets.symmetric(
+                      //           vertical: 0, horizontal: 0),
+                      //       child: Card(
+                      //         child: ListTile(
+                      //           leading: Image.network(
+                      //             clothData['clothImg'],
+                      //             fit: BoxFit.cover,
+                      //             errorBuilder: (context, error, stackTrace) {
+                      //               return Container(
+                      //                 width: 50,
+                      //                 height: 50,
+                      //                 color: Colors.grey,
+                      //                 child: Icon(
+                      //                   Icons.error,
+                      //                   color: Colors.red,
+                      //                 ),
+                      //               );
+                      //             },
+                      //           ),
+                      //           title: Text(
+                      //             clothData['clothName'],
+                      //             style: TextStyle(
+                      //               fontFamily:
+                      //                   GoogleFonts.openSans().fontFamily,
+                      //             ),
+                      //           ),
+                      //           subtitle: Text(
+                      //             clothData['arabicName'],
+                      //             style: TextStyle(
+                      //               fontFamily:
+                      //                   GoogleFonts.openSans().fontFamily,
+                      //             ),
+                      //           ),
+                      //           trailing: IconButton(
+                      //             icon: Icon(Icons.delete),
+                      //             onPressed: () {
+                      //               removeDataFromClothDate(index);
+                      //             },
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
 
                       ListView.builder(
                         shrinkWrap: true,
@@ -1747,7 +1895,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  clothdata_orders['arabicName'],
+                                  clothdata_orders['billing'],
                                   style: TextStyle(
                                     fontFamily:
                                         GoogleFonts.openSans().fontFamily,
@@ -1803,7 +1951,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  cloth['arabicName'],
+                                  cloth['billing'],
                                   style: TextStyle(
                                     fontFamily: GoogleFonts.openSans().fontFamily,
                                   ),
@@ -1932,7 +2080,7 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  fetchCustomerDiscount(state.response.pickupCustomerId as String);
+                                 // fetchCustomerDiscount(state.response.pickupCustomerId as String);
                                   if (state.response.pickupOrderId != null) {
                                     //
                                     // print(clothdate);
@@ -2315,6 +2463,8 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
         final customerDetails = jsonDecode(response.body);
         int discount = customerDetails['discount'].toInt();
         // Assuming you have a state variable to store the discount
+
+        customerDataList.add(customerDetails);
         setState(() {
           customerDiscount = discount;
         });
@@ -2426,18 +2576,39 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
       };
     }).toList();
 
+    // double subTotal = 0.0;
+    // for (var cloth in convertedClothData) {
+    //   final priceId = cloth['priceId'];
+    //   final priceDetails = await fetchPriceDetails(priceId);
+    //   print(priceDetails);
+    //   if (priceDetails != null) {
+    //     double price = double.parse(priceDetails['price']);
+    //     cloth['price'] = price;
+    //     subTotal += price;
+    //     print(cloth['price']);
+    //   }
+    // }
+
     double subTotal = 0.0;
     for (var cloth in convertedClothData) {
       final priceId = cloth['priceId'];
       final priceDetails = await fetchPriceDetails(priceId);
-      print(priceDetails);
+
       if (priceDetails != null) {
-        double price = double.parse(priceDetails['price']);
-        cloth['price'] = price;
-        subTotal += price;
-        print(cloth['price']);
+        double price;
+        if (cloth['billing'] == 'Express') {
+          price = double.parse(priceDetails['xprice']);
+        } else {
+          price = double.parse(priceDetails['price']);
+        }
+
+        int quantity = cloth['qnty'];
+        double totalPriceForItem = price * quantity;
+        cloth['price'] = totalPriceForItem;
+        subTotal += totalPriceForItem;
       }
     }
+    print('Subtotal: $subTotal');
 
 
     var dataprint ={
@@ -2465,6 +2636,29 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
     );
 
     if (response.statusCode == 200) {
+
+      //chnage status
+
+      final url = 'https://be.syswash.net/api/syswash/pickupstatus/$pickupassgnId?code=A';
+      final response = await http.put(
+          Uri.parse(url),
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json", // Specify the content type as JSON
+            "Authorization": "Bearer $userToken"
+          },
+          body: jsonEncode({"pickupstatus": "Received"})
+      );
+
+      if (response.statusCode == 200) {
+        print('status_changed_success');
+      } else {
+        print('Failed to change status: ${response.body}');
+      }
+
+
+
+
       AppSp().setLastAddedItemOrder(pickupassgnId.toString());
       EasyLoading.showToast("Data Added Successfull");
       clothdate.clear();
@@ -2563,19 +2757,39 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
     combinedClothData.addAll(convertedClothData);
     combinedClothData.addAll(clothdata_order_existing);
 
-
     double subTotal = 0.0;
     for (var cloth in convertedClothData) {
       final priceId = cloth['priceId'];
       final priceDetails = await fetchPriceDetails(priceId);
-      print(priceDetails);
+
       if (priceDetails != null) {
-        double price = double.parse(priceDetails['price']);
-        cloth['price'] = price;
-        subTotal += price;
-        print(cloth['price']);
+        double price;
+        if (cloth['billing'] == 'Express') {
+          price = double.parse(priceDetails['xprice']);
+        } else {
+          price = double.parse(priceDetails['price']);
+        }
+
+        int quantity = cloth['qnty'];
+        double totalPriceForItem = price * quantity;
+        cloth['price'] = totalPriceForItem;
+        subTotal += totalPriceForItem;
       }
     }
+    print('Subtotal: $subTotal');
+
+    // double subTotal = 0.0;
+    // for (var cloth in convertedClothData) {
+    //   final priceId = cloth['priceId'];
+    //   final priceDetails = await fetchPriceDetails(priceId);
+    //   print(priceDetails);
+    //   if (priceDetails != null) {
+    //     double price = double.parse(priceDetails['price']);
+    //     cloth['price'] = price;
+    //     subTotal += price;
+    //     print(cloth['price']);
+    //   }
+    // }
     var dataprint =
     {
       "userName": username_x,
@@ -2603,7 +2817,29 @@ class _CustomerDetailsOrderState extends State<CustomerDetailsOrder> {
     );
 
     if (response.statusCode == 200) {
-      print(response.body);
+      //chnage status
+
+      final url = 'https://be.syswash.net/api/syswash/pickupstatus/$pickupassgnId?code=A';
+      final response = await http.put(
+          Uri.parse(url),
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json", // Specify the content type as JSON
+            "Authorization": "Bearer $userToken"
+          },
+          body: jsonEncode({"pickupstatus": "Received"})
+      );
+
+      if (response.statusCode == 200) {
+        print('status_changed_success');
+      } else {
+        print('Failed to change status: ${response.body}');
+      }
+
+
+
+
+
       AppSp().setLastAddedItemOrder(pickupassgnId.toString());
       EasyLoading.showToast("Data Added Succesfully");
       clothdate.clear();
