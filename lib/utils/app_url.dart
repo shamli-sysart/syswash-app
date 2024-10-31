@@ -21,6 +21,13 @@ class AppUrls{
 
   static const driverdevicetoken = "${baseUrl}driverdevicetoken";
 
+  static const updatepass = "${baseUrl}driverchangepass/";
+
+  //https://be.syswash.net/api/syswash/pos/DRY CLEAN?&code=TRAIL
+
+  static const fetchClothsbyServiceName = "${baseUrl}pos/";
+
+
 }
 
 

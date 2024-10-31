@@ -1,13 +1,13 @@
 /// code : 200
-/// pickup : [{"pickupassgnId":56,"pickupassgn":[],"pickupDate":"2024-03-16","pickupCustomerId":"2551","pickupCustomerName":"SAVAD","pickupCustomerArea":"AIN KHALID","pickupCustomerCode":"JL2551","pickupCustomerPhno":99009900,"pickupDriverid":8,"pickupDrivername":"Shamli","pickupstatus":"Assigned","AssignedFrom":"orderList","pickupOrderId":"24388","trash":false},{"pickupassgnId":66,"pickupassgn":[],"pickupDate":"2024-03-18","pickupCustomerId":"2563","pickupCustomerName":"SHMILI","pickupCustomerArea":"Doha","pickupCustomerCode":"JL2563","pickupCustomerPhno":788990766,"pickupDriverid":8,"pickupDrivername":"Shamli","pickupstatus":"Assigned","AssignedFrom":"orderList","pickupOrderId":"24379","trash":false},{"pickupassgnId":67,"pickupassgn":[],"pickupDate":"2024-03-18","pickupCustomerId":"2564","pickupCustomerName":"jiny","pickupCustomerArea":"Doha","pickupCustomerCode":"JL2564","pickupCustomerPhno":35789642,"pickupDriverid":8,"pickupDrivername":"Shamli","pickupstatus":"Assigned","AssignedFrom":null,"pickupOrderId":null,"trash":false},{"pickupassgnId":68,"pickupassgn":[],"pickupDate":"2024-03-18","pickupCustomerId":"2564","pickupCustomerName":"jiny","pickupCustomerArea":"Doha","pickupCustomerCode":"JL2564","pickupCustomerPhno":35789642,"pickupDriverid":8,"pickupDrivername":"Shamli","pickupstatus":"Assigned","AssignedFrom":null,"pickupOrderId":null,"trash":false},{"pickupassgnId":69,"pickupassgn":[],"pickupDate":"2024-03-18","pickupCustomerId":"2551","pickupCustomerName":"SAVAD","pickupCustomerArea":"AIN KHALID","pickupCustomerCode":"JL2551","pickupCustomerPhno":99009900,"pickupDriverid":8,"pickupDrivername":"Shamli","pickupstatus":"Assigned","AssignedFrom":"orderList","pickupOrderId":"24388","trash":false},{"pickupassgnId":70,"pickupassgn":[{"pickuporderId":1,"paymentMode":null,"pickuporderDate":"2024-03-26","pickuporderTime":"12:359","quantity":2,"subTotal":6285.0,"discount":0.0,"totalAmount":6285.0,"paidAmount":0.0,"balance":6285.0,"deliveryType":"PICKUP & DELIVERY","accountType":"MobileApp","clothData":[{"qnty":1,"billing":"Express","priceId":106,"service":"DC","clothImg":"https://apisys.s3.me-south-1.amazonaws.com/api/images/T-SHIRT.jpg","clothName":"T-SHIRT","arabicName":"بلوزة","clothPrice":"10.000"},{"qnty":1,"billing":"Normal","priceId":106,"service":"DC","clothImg":"https://apisys.s3.me-south-1.amazonaws.com/api/images/T-SHIRT.jpg","clothName":"T-SHIRT","arabicName":"بلوزة","clothPrice":"5.000"}],"ClothWiseStatus":null,"status":"Received","tenderCurrency":null,"tenderDate":null,"tenderTime":null,"billReceiver":null,"trash":false,"pickupassgn":70},{"pickuporderId":2,"paymentMode":null,"pickuporderDate":"2024-03-26","pickuporderTime":"12:359","quantity":2,"subTotal":6285.0,"discount":0.0,"totalAmount":6285.0,"paidAmount":0.0,"balance":6285.0,"deliveryType":"PICKUP & DELIVERY","accountType":"MobileApp","clothData":[{"qnty":1,"billing":"Express","priceId":106,"service":"DC","clothImg":"https://apisys.s3.me-south-1.amazonaws.com/api/images/T-SHIRT.jpg","clothName":"T-SHIRT","arabicName":"بلوزة","clothPrice":"10.000"},{"qnty":1,"billing":"Normal","priceId":106,"service":"DC","clothImg":"https://apisys.s3.me-south-1.amazonaws.com/api/images/T-SHIRT.jpg","clothName":"T-SHIRT","arabicName":"بلوزة","clothPrice":"5.000"}],"ClothWiseStatus":null,"status":"Received","tenderCurrency":null,"tenderDate":null,"tenderTime":null,"billReceiver":null,"trash":false,"pickupassgn":70}],"pickupDate":"2024-03-18","pickupCustomerId":"2562","pickupCustomerName":"nishitha","pickupCustomerArea":"Doha","pickupCustomerCode":"JL2562","pickupCustomerPhno":98764212345,"pickupDriverid":8,"pickupDrivername":"Shamli","pickupstatus":"Assigned","AssignedFrom":null,"pickupOrderId":null,"trash":false}]
+/// pickup : [{"pickupassgnId":39,"pickupassgn":[],"pickupDate":"2024-02-22","pickupCustomerId":"3157","pickupCustomerName":"jeny","pickupCustomerArea":"Near Badriya Signal Bin Mahmoud","pickupCustomerCode":"FW2996","pickupCustomerPhno":55433221,"pickupDriverid":5,"pickupDrivername":"arun","pickupstatus":"Assigned","AssignedFrom":"orderList","pickupOrderId":"8961","remarks":null,"notes":null,"trash":false},{"pickupassgnId":47,"pickupassgn":[],"pickupDate":"2024-03-18","pickupCustomerId":"3157","pickupCustomerName":"jeny","pickupCustomerArea":"Near Badriya Signal Bin Mahmoud","pickupCustomerCode":"FW2996","pickupCustomerPhno":55433221,"pickupDriverid":5,"pickupDrivername":"arun","pickupstatus":"Assigned","AssignedFrom":"orderList","pickupOrderId":"8982","remarks":"verify the cloths","notes":"take order with in 30 min","trash":false}]
 
 class PickupOrderListingResponse {
   PickupOrderListingResponse({
-    num? code,
-    List<Pickup>? pickup,}){
+      num? code, 
+      List<Pickup>? pickup,}){
     _code = code;
     _pickup = pickup;
-  }
+}
 
   PickupOrderListingResponse.fromJson(dynamic json) {
     _code = json['code'];
@@ -20,11 +20,11 @@ class PickupOrderListingResponse {
   }
   num? _code;
   List<Pickup>? _pickup;
-  PickupOrderListingResponse copyWith({  num? code,
-    List<Pickup>? pickup,
-  }) => PickupOrderListingResponse(  code: code ?? _code,
-    pickup: pickup ?? _pickup,
-  );
+PickupOrderListingResponse copyWith({  num? code,
+  List<Pickup>? pickup,
+}) => PickupOrderListingResponse(  code: code ?? _code,
+  pickup: pickup ?? _pickup,
+);
   num? get code => _code;
   List<Pickup>? get pickup => _pickup;
 
@@ -39,37 +39,41 @@ class PickupOrderListingResponse {
 
 }
 
-/// pickupassgnId : 56
+/// pickupassgnId : 39
 /// pickupassgn : []
-/// pickupDate : "2024-03-16"
-/// pickupCustomerId : "2551"
-/// pickupCustomerName : "SAVAD"
-/// pickupCustomerArea : "AIN KHALID"
-/// pickupCustomerCode : "JL2551"
-/// pickupCustomerPhno : 99009900
-/// pickupDriverid : 8
-/// pickupDrivername : "Shamli"
+/// pickupDate : "2024-02-22"
+/// pickupCustomerId : "3157"
+/// pickupCustomerName : "jeny"
+/// pickupCustomerArea : "Near Badriya Signal Bin Mahmoud"
+/// pickupCustomerCode : "FW2996"
+/// pickupCustomerPhno : 55433221
+/// pickupDriverid : 5
+/// pickupDrivername : "arun"
 /// pickupstatus : "Assigned"
 /// AssignedFrom : "orderList"
-/// pickupOrderId : "24388"
+/// pickupOrderId : "8961"
+/// remarks : null
+/// notes : null
 /// trash : false
 
 class Pickup {
   Pickup({
-    num? pickupassgnId,
-    List<dynamic>? pickupassgn,
-    String? pickupDate,
-    String? pickupCustomerId,
-    String? pickupCustomerName,
-    String? pickupCustomerArea,
-    String? pickupCustomerCode,
-    num? pickupCustomerPhno,
-    num? pickupDriverid,
-    String? pickupDrivername,
-    String? pickupstatus,
-    String? assignedFrom,
-    String? pickupOrderId,
-    bool? trash,}){
+      num? pickupassgnId, 
+      List<dynamic>? pickupassgn, 
+      String? pickupDate, 
+      String? pickupCustomerId, 
+      String? pickupCustomerName, 
+      String? pickupCustomerArea, 
+      String? pickupCustomerCode, 
+      num? pickupCustomerPhno, 
+      num? pickupDriverid, 
+      String? pickupDrivername, 
+      String? pickupstatus, 
+      String? assignedFrom, 
+      String? pickupOrderId, 
+      dynamic remarks, 
+      dynamic notes, 
+      bool? trash,}){
     _pickupassgnId = pickupassgnId;
     _pickupassgn = pickupassgn;
     _pickupDate = pickupDate;
@@ -83,15 +87,17 @@ class Pickup {
     _pickupstatus = pickupstatus;
     _assignedFrom = assignedFrom;
     _pickupOrderId = pickupOrderId;
+    _remarks = remarks;
+    _notes = notes;
     _trash = trash;
-  }
+}
 
   Pickup.fromJson(dynamic json) {
     _pickupassgnId = json['pickupassgnId'];
     if (json['pickupassgn'] != null) {
       _pickupassgn = [];
       json['pickupassgn'].forEach((v) {
-        //_pickupassgn?.add(Dynamic.fromJson(v));
+        // _pickupassgn?.add(Dynamic.fromJson(v));
       });
     }
     _pickupDate = json['pickupDate'];
@@ -105,6 +111,8 @@ class Pickup {
     _pickupstatus = json['pickupstatus'];
     _assignedFrom = json['AssignedFrom'];
     _pickupOrderId = json['pickupOrderId'];
+    _remarks = json['remarks'];
+    _notes = json['notes'];
     _trash = json['trash'];
   }
   num? _pickupassgnId;
@@ -120,36 +128,42 @@ class Pickup {
   String? _pickupstatus;
   String? _assignedFrom;
   String? _pickupOrderId;
+  dynamic _remarks;
+  dynamic _notes;
   bool? _trash;
-  Pickup copyWith({  num? pickupassgnId,
-    List<dynamic>? pickupassgn,
-    String? pickupDate,
-    String? pickupCustomerId,
-    String? pickupCustomerName,
-    String? pickupCustomerArea,
-    String? pickupCustomerCode,
-    num? pickupCustomerPhno,
-    num? pickupDriverid,
-    String? pickupDrivername,
-    String? pickupstatus,
-    String? assignedFrom,
-    String? pickupOrderId,
-    bool? trash,
-  }) => Pickup(  pickupassgnId: pickupassgnId ?? _pickupassgnId,
-    pickupassgn: pickupassgn ?? _pickupassgn,
-    pickupDate: pickupDate ?? _pickupDate,
-    pickupCustomerId: pickupCustomerId ?? _pickupCustomerId,
-    pickupCustomerName: pickupCustomerName ?? _pickupCustomerName,
-    pickupCustomerArea: pickupCustomerArea ?? _pickupCustomerArea,
-    pickupCustomerCode: pickupCustomerCode ?? _pickupCustomerCode,
-    pickupCustomerPhno: pickupCustomerPhno ?? _pickupCustomerPhno,
-    pickupDriverid: pickupDriverid ?? _pickupDriverid,
-    pickupDrivername: pickupDrivername ?? _pickupDrivername,
-    pickupstatus: pickupstatus ?? _pickupstatus,
-    assignedFrom: assignedFrom ?? _assignedFrom,
-    pickupOrderId: pickupOrderId ?? _pickupOrderId,
-    trash: trash ?? _trash,
-  );
+Pickup copyWith({  num? pickupassgnId,
+  List<dynamic>? pickupassgn,
+  String? pickupDate,
+  String? pickupCustomerId,
+  String? pickupCustomerName,
+  String? pickupCustomerArea,
+  String? pickupCustomerCode,
+  num? pickupCustomerPhno,
+  num? pickupDriverid,
+  String? pickupDrivername,
+  String? pickupstatus,
+  String? assignedFrom,
+  String? pickupOrderId,
+  dynamic remarks,
+  dynamic notes,
+  bool? trash,
+}) => Pickup(  pickupassgnId: pickupassgnId ?? _pickupassgnId,
+  pickupassgn: pickupassgn ?? _pickupassgn,
+  pickupDate: pickupDate ?? _pickupDate,
+  pickupCustomerId: pickupCustomerId ?? _pickupCustomerId,
+  pickupCustomerName: pickupCustomerName ?? _pickupCustomerName,
+  pickupCustomerArea: pickupCustomerArea ?? _pickupCustomerArea,
+  pickupCustomerCode: pickupCustomerCode ?? _pickupCustomerCode,
+  pickupCustomerPhno: pickupCustomerPhno ?? _pickupCustomerPhno,
+  pickupDriverid: pickupDriverid ?? _pickupDriverid,
+  pickupDrivername: pickupDrivername ?? _pickupDrivername,
+  pickupstatus: pickupstatus ?? _pickupstatus,
+  assignedFrom: assignedFrom ?? _assignedFrom,
+  pickupOrderId: pickupOrderId ?? _pickupOrderId,
+  remarks: remarks ?? _remarks,
+  notes: notes ?? _notes,
+  trash: trash ?? _trash,
+);
   num? get pickupassgnId => _pickupassgnId;
   List<dynamic>? get pickupassgn => _pickupassgn;
   String? get pickupDate => _pickupDate;
@@ -163,6 +177,8 @@ class Pickup {
   String? get pickupstatus => _pickupstatus;
   String? get assignedFrom => _assignedFrom;
   String? get pickupOrderId => _pickupOrderId;
+  dynamic get remarks => _remarks;
+  dynamic get notes => _notes;
   bool? get trash => _trash;
 
   Map<String, dynamic> toJson() {
@@ -182,6 +198,8 @@ class Pickup {
     map['pickupstatus'] = _pickupstatus;
     map['AssignedFrom'] = _assignedFrom;
     map['pickupOrderId'] = _pickupOrderId;
+    map['remarks'] = _remarks;
+    map['notes'] = _notes;
     map['trash'] = _trash;
     return map;
   }

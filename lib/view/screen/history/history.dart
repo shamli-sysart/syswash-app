@@ -1,11 +1,12 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../service/api_service.dart';
+import '../../../utils/app_constant.dart';
 import '../../../utils/app_sp.dart';
 import 'bloc/history_bloc.dart';
 
@@ -27,6 +28,9 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
   String userID = "";
   String LoggerUsername = "";
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -40,19 +44,37 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
     userToken = await appSp.getToken();
     companyCode = await appSp.getCompanyCode();
     LoggerUsername = await appSp.getUserName();
-
     userID = await appSp.getUserID();
     _historyBloc.add(HistoryApiEvent(userToken, companyCode, userID));
-
   }
 
+  List<dynamic>? _getFilteredOrders(List<dynamic>? orders, bool isPickup) {
+    if (_searchQuery.isEmpty) {
+      return orders;
+    } else {
+      return orders
+          ?.where((order) => (isPickup
+          ? order?.pickupCustomerName
+          : order?.deliveryassgn?[0]?.deliveryCustomerName)
+          ?.toLowerCase()
+          .contains(_searchQuery.toLowerCase()) ??
+          false)
+          .toList();
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
+  }
 
   @override
   void dispose() {
     _historyBloc.close();
+    _searchController.dispose();
     super.dispose();
   }
-
 
 
   @override
@@ -64,96 +86,121 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
             if (state is LoadedState) {
               var pickuporders = state.response.pickup;
               var deliveries = state.response.delivery;
-               deliveries?.sort((a, b) {
+
+              deliveries?.sort((a, b) {
                 var aNum = num.tryParse((a.orderId ?? '').toString()) ?? 0;
                 var bNum = num.tryParse((b.orderId ?? '').toString()) ?? 0;
                 return bNum.compareTo(aNum);
               });
+
+              pickuporders?.sort((a, b) {
+                var aNum = num.tryParse((a.pickupassgnId ?? '').toString()) ?? 0;
+                var bNum = num.tryParse((b.pickupassgnId ?? '').toString()) ?? 0;
+                return bNum.compareTo(aNum);
+              });
+
+              var filteredPickupOrders = _getFilteredOrders(pickuporders, true);
+              var filteredDeliveryOrders = _getFilteredOrders(deliveries, false);
 
 
               return SafeArea(
                 child: Scaffold(
                   backgroundColor: Color(0xFFEFEEF3),
                   body: Padding(
-                    padding: const EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // SizedBox(height: 30),
+                        SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                SizedBox(width: 10),
-                                Text(
-                                  '$LoggerUsername',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.normal,
-                                    fontFamily: GoogleFonts.openSans().fontFamily,
-                                    color: Color(0xFF000000),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              LoggerUsername,
+                              style: TextStyle(
+                                color: Color(0xFF000000),
+                                fontFamily: GoogleFonts.poppins().fontFamily,
+                                fontSize: MediaQuery.of(context).size.width * 0.057,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            IconButton(
-                              icon: Icon(Icons.notifications_outlined,
-                                  size: 45, color: Color(0xFF301C93)),
-                              onPressed: () {
-                                // Add your onPressed logic here
-                              },
-                            ),
-                            // SizedBox(width: 0,)
+                            Image.asset(bell,height: 35,width: 35,),
                           ],
                         ),
-                        // SizedBox(height: 5),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'History',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontFamily: GoogleFonts.openSans().fontFamily,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF301C93),
-                                ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'History',
+                              style: TextStyle(
+                                fontSize: MediaQuery.of(context).size.width * 0.040,
+                                fontFamily: GoogleFonts.poppins().fontFamily,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF63629C),
                               ),
-                              TextButton.icon(
-                                icon: Icon(Icons.arrow_back_outlined,
-                                    size: 22, color: Color(0xFF301C93)),
-                                label: Text('Back',
-                                    style: TextStyle(
-                                      color: Color(0xFF301C93),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                      fontFamily: GoogleFonts.openSans().fontFamily,
-                                    )),
-                                onPressed: () {
-                                  Navigator.pushNamed(context, "/dashHome");
-                                  // Add your onPressed logic here
-                                },
-                              ),
-                            ],
-                          ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, "/dashHome");
+                              },
+                              icon: Icon(Icons.west_sharp,  size:  MediaQuery.of(context).size.width * 0.050, color: Color(0xFF524B6B)),
+                            ),
+                          ],
                         ),
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(5.0),
                             child: Column(
                               children: [
                                 TabBar(
                                   controller: _tabController,
+                                  labelColor: Colors.white,
+                                  unselectedLabelColor: Colors.black,
+                                  indicatorColor: Colors.white,
+                                  labelStyle: TextStyle(
+                                      fontSize:   MediaQuery.of(context).size.width * 0.040,
+                                      fontWeight: FontWeight.bold),
+                                  unselectedLabelStyle: TextStyle( fontSize:   MediaQuery.of(context).size.width * 0.040,),
+                                  indicator: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8), // Adjust as needed
+                                      color:  Color(0xFF68188B),
+                                  ),
+
                                   tabs: [
-                                    Tab(
-                                      child: Text("Pickup", style: TextStyle(fontSize:20,color: Colors.black),),
-                                    ),
-                                    Tab(
-                                      child: Text("Delivery", style: TextStyle(fontSize: 20,color: Colors.black,),),
-                                    )
+                                    Container(
+                                      height: 40,
+                                      child:   Tab(text: 'Pickup',),),
+                                    Container(
+                                      height: 40,
+                                      child:   Tab(text: 'Delivery',),),
+
+
                                   ],
+                                ),
+                                SizedBox(height: 10,),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFFFFFF),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        spreadRadius: 1,
+                                        blurRadius: 5,
+                                        offset: Offset(0, 3), // changes position of shadow
+                                      ),
+                                    ],
+                                  ),
+                                  child: TextField(
+                                    controller: _searchController,
+                                    onChanged: _onSearchChanged,
+                                    decoration: InputDecoration(
+                                      prefixIcon: Icon(Icons.search),
+                                      hintText: 'Search...',
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.symmetric(vertical: 15),
+                                    ),
+                                  ),
                                 ),
                                 Expanded(
                                   child: TabBarView(
@@ -161,23 +208,28 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
                                     controller: _tabController,
                                     children: [
                                       ListView.builder(
-                                        itemCount: pickuporders?.length,
+                                        itemCount: filteredPickupOrders?.length ?? 0,
                                         itemBuilder: (context, index) {
                                           return Container(
-                                            margin: const EdgeInsets.symmetric(vertical: 8.0),
-                                            decoration: BoxDecoration(
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 5,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
+                                            margin: const EdgeInsets.symmetric(vertical: 2.0),
+                                            // decoration: BoxDecoration(
+                                            //   boxShadow: [
+                                            //     BoxShadow(
+                                            //       color: Colors.grey.withOpacity(0.1),
+                                            //       spreadRadius: 1,
+                                            //       blurRadius: 1,
+                                            //       offset: Offset(0, 1), // changes position of shadow
+                                            //     ),
+                                            //   ],
+                                            //
+                                            // ),
+
                                             child: Card(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
                                               child: Padding(
-                                                padding: const EdgeInsets.all(10.0),
+                                                padding: const EdgeInsets.all(8.0),
                                                 child: Row(
                                                   children: [
                                                     SizedBox(width: 15.0),
@@ -186,50 +238,63 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
                                                           Text(
-                                                            pickuporders?[index]
+                                                            filteredPickupOrders?[index]
                                                                 .pickupCustomerName ??
                                                                 'Unknown',
                                                             style: TextStyle(
                                                               fontWeight: FontWeight.bold,
-                                                              fontSize: 18.0,
-                                                              fontFamily: GoogleFonts.openSans().fontFamily,
-                                                              color: const Color(0xFF301C93),
+                                                              fontSize: 14.0,
+                                                              fontFamily: GoogleFonts.dmSans().fontFamily,
+                                                              color: Color(0xFF150B3D),
                                                             ),
                                                           ),
                                                           SizedBox(height: 5.0),
                                                           Text(
-                                                            pickuporders?[index]
+                                                            filteredPickupOrders?[index]
                                                                 .pickupstatus ??
                                                                 'Unknown',
                                                             style: TextStyle(
-                                                              fontSize: 14.0,
+                                                              fontSize: 12.0,
                                                               fontFamily: GoogleFonts.openSans().fontFamily,
+                                                              color: Color(0xFF524B6B),
                                                             ),
                                                           ),
                                                           SizedBox(height: 5.0),
                                                           Row(
                                                             children: [
-                                                              Icon(Icons.location_on, size: 16.0, color: Colors.red),
+                                                              Icon(
+                                                                Icons.location_on,
+                                                                size: 16.0,
+                                                                color: Color(0xFFC7C7CC),
+                                                              ),
                                                               SizedBox(width: 5.0),
                                                               Text(
-                                                                pickuporders?[index]
+                                                                filteredPickupOrders?[index]
                                                                     .pickupCustomerArea ??
                                                                     'Unknown',
                                                                 style: TextStyle(
-                                                                  fontSize: 14.0,
-                                                                  fontFamily: GoogleFonts.openSans().fontFamily,
+                                                                  fontSize: 9.0,
+                                                                  fontFamily: GoogleFonts.poppins().fontFamily,
+                                                                  color: Color(0xFF000000),
+                                                                  fontWeight: FontWeight.w400,
                                                                 ),
                                                               ),
                                                               SizedBox(width: 10.0),
-                                                              Icon(Icons.access_time, size: 16.0, color: Colors.red),
+                                                              Icon(
+                                                                Icons.access_time,
+                                                                size: 16.0,
+                                                                color: Color(0xFFC7C7CC),
+                                                              ),
                                                               SizedBox(width: 5.0),
                                                               Text(
-                                                                pickuporders?[index]
+                                                                filteredPickupOrders?[index]
                                                                     .pickupDate ??
                                                                     'Unknown',
                                                                 style: TextStyle(
-                                                                  fontSize: 14.0,
-                                                                  fontFamily: GoogleFonts.openSans().fontFamily,
+                                                                  fontSize: 9.0,
+                                                                  fontFamily: GoogleFonts.poppins().fontFamily,
+                                                                  color: Color(0xFF000000),
+                                                                  fontWeight: FontWeight.w400,
                                                                 ),
                                                               ),
                                                             ],
@@ -245,23 +310,27 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
                                         },
                                       ),
                                       ListView.builder(
-                                        itemCount: deliveries?.length,
+                                        itemCount:filteredDeliveryOrders?.length ?? 0,
                                         itemBuilder: (context, index) {
+
                                           return Container(
-                                            margin: const EdgeInsets.symmetric(vertical: 8.0),
-                                            decoration: BoxDecoration(
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey.withOpacity(0.5),
-                                                  spreadRadius: 2,
-                                                  blurRadius: 5,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
+                                            margin: const EdgeInsets.symmetric(vertical: 2.0),
+                                            // decoration: BoxDecoration(
+                                            //   boxShadow: [
+                                            //     BoxShadow(
+                                            //       color: Colors.grey.withOpacity(0.2),
+                                            //       spreadRadius: 1,
+                                            //       blurRadius: 5,
+                                            //       offset: Offset(0, 3), // changes position of shadow
+                                            //     ),
+                                            //   ],
+                                            // ),
                                             child: Card(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
                                               child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
+                                                padding: const EdgeInsets.all(10.0),
                                                 child: Row(
                                                   children: [
                                                     SizedBox(width: 15.0),
@@ -270,52 +339,81 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
                                                           Text(
-                                                            deliveries?[index]
-                                                                .customerName ??
-                                                                'Unknown',
+                                                            filteredDeliveryOrders![index].deliveryassgn?[0]?.deliveryCustomerName ?? 'Unknown',
                                                             style: TextStyle(
                                                               fontWeight: FontWeight.bold,
-                                                              fontSize: 15.0,
-                                                              fontFamily: GoogleFonts.openSans().fontFamily,
-                                                              color: const Color(0xFF301C93),
+                                                              fontSize: 14.0,
+                                                              fontFamily: GoogleFonts.dmSans().fontFamily,
+                                                              color: Color(0xFF150B3D),
                                                             ),
                                                           ),
                                                           SizedBox(height: 5.0),
-                                                          Text(
-                                                            deliveries?[index]
-                                                                .status ??
-                                                                'Unknown',
-                                                            style: TextStyle(
-                                                              fontSize: 13.0,
-                                                              fontFamily: GoogleFonts.openSans().fontFamily,
-                                                            ),
+
+
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              Text(
+                                                                filteredDeliveryOrders![index].deliveryassgn?[0]?.status ?? 'Unknown',
+                                                                style: TextStyle(
+                                                                  fontSize: 12.0,
+                                                                  fontFamily: GoogleFonts.dmSans().fontFamily,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                filteredDeliveryOrders![index].deliveryassgn?[0]?.paymentstatus?.toUpperCase() ?? 'Unknown',
+                                                                style: TextStyle(
+                                                                  fontSize: 12.0,
+                                                                  fontFamily: GoogleFonts.dmSans().fontFamily,
+                                                                  color: filteredDeliveryOrders![index].deliveryassgn?[0]?.paymentstatus == 'collected' ? Colors.green : Colors.red,
+                                                                ),
+                                                              ),
+
+
+
+
+                                                            ],
                                                           ),
+
+
                                                           SizedBox(height: 5.0),
                                                           Row(
                                                             children: [
-                                                              Icon(Icons.location_on, size: 16.0, color: Colors.red),
+                                                              Icon(
+                                                                Icons.location_on,
+                                                                size: 16.0,
+                                                                color: Color(0xFFC7C7CC),
+                                                              ),
                                                               SizedBox(width: 5.0),
                                                               Text(
-                                                                deliveries?[index]
-                                                                    .customerAddress ??
-                                                                    'Unknown',
+                                                                filteredDeliveryOrders![index].deliveryassgn?[0]?.deliveryCustomerArea ?? 'Unknown',
                                                                 style: TextStyle(
-                                                                  fontSize: 13.0,
-                                                                  fontFamily: GoogleFonts.openSans().fontFamily,
+                                                                  fontSize: 9.0,
+                                                                  fontFamily: GoogleFonts.poppins().fontFamily,
+                                                                  color: Color(0xFF000000),
+                                                                  fontWeight: FontWeight.w400,
                                                                 ),
                                                               ),
                                                               SizedBox(width: 10.0),
-                                                              Icon(Icons.access_time, size: 16.0, color: Colors.red),
+                                                              Icon(
+                                                                Icons.access_time,
+                                                                size: 16.0,
+                                                                color: Color(0xFFC7C7CC),
+                                                              ),
                                                               SizedBox(width: 5.0),
+
                                                               Text(
-                                                                deliveries?[index]
-                                                                    .deliveredDateTime ??
-                                                                    'Unknown',
+                                                                '${filteredDeliveryOrders![index].deliveryassgn?[0]?.deliveryDate ?? 'Unknown'} ${deliveries![index].deliveryassgn?[0]?.deliveryTime ?? 'Unknown'}',
                                                                 style: TextStyle(
-                                                                  fontSize: 13.0,
-                                                                  fontFamily: GoogleFonts.openSans().fontFamily,
+                                                                  fontSize: 9.0,
+                                                                  fontFamily: GoogleFonts.poppins().fontFamily,
+                                                                  color: Color(0xFF000000),
+                                                                  fontWeight: FontWeight.w400,
                                                                 ),
                                                               ),
+
+
+
                                                             ],
                                                           ),
                                                         ],
@@ -339,36 +437,83 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  bottomNavigationBar:  BottomNavigationBar(
-                    currentIndex: _currentIndex,
-                    onTap: _onItemTapped,
-                    type: BottomNavigationBarType.fixed,
-                    items: [
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home),
-                        label: 'Home',
+
+
+
+
+
+
+                  bottomNavigationBar: Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFF68188B),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
                       ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.car_crash),
-                        label: 'Pickup',
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
+                      child: GNav(
+                        backgroundColor: Color(0xFF68188B),
+                        color: Colors.white,
+                        activeColor: Color(0xFF68188B),
+                        tabBackgroundColor: Colors.white,
+                        gap: 8,
+                        padding: EdgeInsets.all(3),
+                        selectedIndex: _currentIndex,
+                        onTabChange: (index) {
+                          setState(() {
+                            _currentIndex = index;
+
+                          });
+                        },
+                        // onTabChange: (index) {
+                        //   print(index);
+                        // },
+                        tabs: [
+                          GButton(
+                            icon: Icons.home_outlined,
+                            text: "Home",
+                            padding: EdgeInsets.all(3),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/dashHome');
+                            },
+                          ),
+                          GButton(
+                            icon: Icons.delivery_dining_outlined,
+                            text: "Pickup",
+                            padding: EdgeInsets.all(3),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/pickupOrderListing');
+                            },
+                          ),
+                          GButton(
+                            icon: Icons.how_to_vote_outlined,
+                            text: "Delivery",
+                            padding: EdgeInsets.all(3),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/delivery');
+                            },
+                          ),
+                          GButton(
+                            icon: Icons.av_timer,
+                            text: "History",
+                            padding: EdgeInsets.all(3),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/history');
+                            },
+                          ),
+                          GButton(
+                            icon: Icons.perm_identity,
+                            text: "Profile",
+                            padding: EdgeInsets.all(3),
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/profile');
+                            },
+                          ),
+                        ],
                       ),
-                      BottomNavigationBarItem(
-                        icon:Icon(Icons.car_crash),
-                        label: 'Delivery',
-                      ),
-                      BottomNavigationBarItem(
-                        icon:Icon(Icons.compare_arrows),
-                        label: 'History',
-                      ),
-                      BottomNavigationBarItem(
-                        icon:Icon(Icons.person),
-                        label: 'Me',
-                      ),
-                    ],
-                    selectedItemColor:Color(0xFF301C93),
-                    selectedFontSize: 12.0,
-                    unselectedFontSize: 12.0,
-                    iconSize: 26.0,
+                    ),
                   ),
                 ),
               );
@@ -390,7 +535,7 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(15.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -398,62 +543,35 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-
-                        // SizedBox(
-                        //     width:
-                        //     10),
-                        Text(
-                          '$LoggerUsername',
-                          style: TextStyle(
-                              fontSize: 24,
-                              fontFamily: GoogleFonts.openSans().fontFamily,
-                              fontWeight: FontWeight.normal,
-                              color: Color(0xFF000000)),
-                        ),
-                      ],
+                    Text(
+                      LoggerUsername,
+                      style: TextStyle(
+                        color: Color(0xFF000000),
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                        fontSize: MediaQuery.of(context).size.width * 0.057,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    IconButton(
-                      icon: Icon(Icons.notifications_outlined,
-                          size: 45, color: Color(0xFF301C93)),
-                      onPressed: () {
-                        // Add your onPressed logic here
-                      },
-                    ),
+                    Image.asset(bell,height: 35,width: 35,),
                   ],
                 ),
-                // Image.asset(
-                //   logo,
-                //   height: 90,
-                //   width: 130,
-                // ),
-
-                // const SizedBox(height: 25),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'History',
                       style: TextStyle(
-                          fontSize: 24,
-                          fontFamily: GoogleFonts.openSans().fontFamily,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF301C93)),
+                        fontSize: MediaQuery.of(context).size.width * 0.040,
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF63629C),
+                      ),
                     ),
-                    TextButton.icon(
-                      icon: Icon(Icons.arrow_back_outlined,
-                          size: 22, color: Color(0xFF301C93)),
-                      label: Text('Back',
-                          style: TextStyle(
-                            color: Color(0xFF301C93),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                            fontFamily: GoogleFonts.openSans().fontFamily,
-                          )),
+                    IconButton(
                       onPressed: () {
-                        // Add your onPressed logic here
+                        Navigator.pushNamed(context, "/dashHome");
                       },
+                      icon: Icon(Icons.west_sharp,  size:  MediaQuery.of(context).size.width * 0.050, color: Color(0xFF524B6B)),
                     ),
                   ],
                 ),
@@ -500,287 +618,80 @@ class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
             ),
           ),
         ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Color(0xFF68188B),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
+            child: GNav(
+              backgroundColor: Color(0xFF68188B),
+              color: Colors.white,
+              activeColor: Color(0xFF68188B),
+              tabBackgroundColor: Colors.white,
+              gap: 8,
+              padding: EdgeInsets.all(3),
+              selectedIndex: _currentIndex,
+              onTabChange: (index) {
+                setState(() {
+                  _currentIndex = index;
+
+                });
+              },
+              // onTabChange: (index) {
+              //   print(index);
+              // },
+              tabs: [
+                GButton(
+                  icon: Icons.home_outlined,
+                  text: "Home",
+                  padding: EdgeInsets.all(3),
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/dashHome');
+                  },
+                ),
+                GButton(
+                  icon: Icons.delivery_dining_outlined,
+                  text: "Pickup",
+                  padding: EdgeInsets.all(3),
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/pickupOrderListing');
+                  },
+                ),
+                GButton(
+                  icon: Icons.how_to_vote_outlined,
+                  text: "Delivery",
+                  padding: EdgeInsets.all(3),
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/delivery');
+                  },
+                ),
+                GButton(
+                  icon: Icons.av_timer,
+                  text: "History",
+                  padding: EdgeInsets.all(3),
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/history');
+                  },
+                ),
+                GButton(
+                  icon: Icons.perm_identity,
+                  text: "Profile",
+                  padding: EdgeInsets.all(3),
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/profile');
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-
-    if (_currentIndex == 0) {
-      Navigator.pushReplacementNamed(context, '/dashHome');
-    } else if (_currentIndex == 1) {
-      Navigator.pushReplacementNamed(context, "/pickupOrderListing");
-    } else if (_currentIndex == 2) {
-      Navigator.pushReplacementNamed(context, "/delivery");
-    } else if (_currentIndex == 3) {
-      Navigator.pushReplacementNamed(context, '/history');
-    } else if (_currentIndex == 4) {
-      Navigator.pushReplacementNamed(context, '/profile');
-    }
-  }
 }
-
-
-
-
-
-
-
-
-
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-//
-// class History extends StatefulWidget {
-//   const History({Key? key}) : super(key: key);
-//
-//   @override
-//   State<History> createState() => _HistoryState();
-// }
-//
-// class _HistoryState extends State<History> with SingleTickerProviderStateMixin {
-//   late TabController _tabController;
-//   int _currentIndex = 3;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _tabController = TabController(length: 2, vsync: this);
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return SafeArea(
-//       child: Scaffold(
-//         backgroundColor: Color(0xFFEFEEF3),
-//         body: Column(
-//           children: [
-//             SizedBox(height: 30),
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 Row(
-//                   children: [
-//                     SizedBox(width: 10),
-//                     Text(
-//                       'Taj Muhammed',
-//                       style: TextStyle(
-//                         fontSize: 24,
-//                         fontWeight: FontWeight.normal,
-//                         fontFamily: GoogleFonts.openSans().fontFamily,
-//                         color: Color(0xFF000000),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//                 IconButton(
-//                   icon: Icon(Icons.notifications_outlined,
-//                       size: 50, color: Color(0xFF301C93)),
-//                   onPressed: () {
-//                     // Add your onPressed logic here
-//                   },
-//                 ),
-//               ],
-//             ),
-//             SizedBox(height: 10),
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 Text(
-//                   'History',
-//                   style: TextStyle(
-//                     fontSize: 24,
-//                     fontFamily: GoogleFonts.openSans().fontFamily,
-//                     fontWeight: FontWeight.bold,
-//                     color: Color(0xFF301C93),
-//                   ),
-//                 ),
-//                 TextButton.icon(
-//                   icon: Icon(Icons.arrow_back_outlined,
-//                       size: 25, color: Color(0xFF301C93)),
-//                   label: Text('Back',
-//                       style: TextStyle(
-//                         color: Color(0xFF301C93),
-//                         fontSize: 20,
-//                         fontFamily: GoogleFonts.openSans().fontFamily,
-//                       )),
-//                   onPressed: () {
-//                     Navigator.pushNamed(context, "/pickupOrderListing");
-//                     // Add your onPressed logic here
-//                   },
-//                 ),
-//               ],
-//             ),
-//             Expanded(
-//               child: Padding(
-//                 padding: const EdgeInsets.all(15.0),
-//                 child: Column(
-//                   children: [
-//                     TabBar(
-//                       controller: _tabController,
-//                       tabs: [
-//                         Tab(
-//                           child: Text("Pickup", style: TextStyle(fontSize:20,color: Colors.black),),
-//                         ),
-//                         Tab(
-//                           child: Text("Order", style: TextStyle(fontSize: 20,color: Colors.black,),),
-//                         )
-//                       ],
-//                     ),
-//                     Expanded(
-//                       child: TabBarView(
-//                         controller: _tabController,
-//                         children: [
-//                           ListView.builder(
-//                             itemCount: 5,
-//                             itemBuilder: (context, index) {
-//                               return _buildCard();
-//                             },
-//                           ),
-//                           ListView.builder(
-//                             itemCount: 2,
-//                             itemBuilder: (context, index) {
-//                               return _buildCard();
-//                             },
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//         bottomNavigationBar:  BottomNavigationBar(
-//           currentIndex: _currentIndex,
-//           onTap: _onItemTapped,
-//           type: BottomNavigationBarType.fixed,
-//           items: [
-//             BottomNavigationBarItem(
-//               icon: Icon(Icons.home),
-//               label: 'Home',
-//             ),
-//             BottomNavigationBarItem(
-//               icon: Icon(Icons.car_crash),
-//               label: 'Pickup',
-//             ),
-//             BottomNavigationBarItem(
-//               icon:Icon(Icons.car_crash),
-//               label: 'Delivery',
-//             ),
-//             BottomNavigationBarItem(
-//               icon:Icon(Icons.compare_arrows),
-//               label: 'History',
-//             ),
-//             BottomNavigationBarItem(
-//               icon:Icon(Icons.person),
-//               label: 'Me',
-//             ),
-//           ],
-//           selectedItemColor:Color(0xFF301C93),
-//           selectedFontSize: 12.0,
-//           unselectedFontSize: 12.0,
-//           iconSize: 26.0,
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildCard() {
-//     return Container(
-//       margin: const EdgeInsets.symmetric(vertical: 8.0),
-//       decoration: BoxDecoration(
-//         boxShadow: [
-//           BoxShadow(
-//             color: Colors.grey.withOpacity(0.5),
-//             spreadRadius: 2,
-//             blurRadius: 5,
-//             offset: const Offset(0, 3),
-//           ),
-//         ],
-//       ),
-//       child: Card(
-//         child: Padding(
-//           padding: const EdgeInsets.all(15.0),
-//           child: Row(
-//             children: [
-//               SizedBox(width: 15.0),
-//               Expanded(
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Text(
-//                       "Text",
-//                       style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         fontSize: 18.0,
-//                         fontFamily: GoogleFonts.openSans().fontFamily,
-//                         color: const Color(0xFF301C93),
-//                       ),
-//                     ),
-//                     SizedBox(height: 5.0),
-//                     Text(
-//                       'text',
-//                       style: TextStyle(
-//                         fontSize: 14.0,
-//                         fontFamily: GoogleFonts.openSans().fontFamily,
-//                       ),
-//                     ),
-//                     SizedBox(height: 5.0),
-//                     Row(
-//                       children: [
-//                         Icon(Icons.location_on, size: 16.0, color: Colors.red),
-//                         SizedBox(width: 5.0),
-//                         Text(
-//                           'text',
-//                           style: TextStyle(
-//                             fontSize: 14.0,
-//                             fontFamily: GoogleFonts.openSans().fontFamily,
-//                           ),
-//                         ),
-//                         SizedBox(width: 10.0),
-//                         Icon(Icons.access_time, size: 16.0, color: Colors.red),
-//                         SizedBox(width: 5.0),
-//                         Text(
-//                           'text',
-//                           style: TextStyle(
-//                             fontSize: 14.0,
-//                             fontFamily: GoogleFonts.openSans().fontFamily,
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//
-//   void _onItemTapped(int index) {
-//     setState(() {
-//       _currentIndex = index;
-//     });
-//
-//     if (_currentIndex == 0) {
-//       Navigator.pushReplacementNamed(context, '/dashHome');
-//     } else if (_currentIndex == 1) {
-//       Navigator.pushReplacementNamed(context, "/pickupOrderListing");
-//     } else if (_currentIndex == 2) {
-//       Navigator.pushReplacementNamed(context, "/delivery");
-//     } else if (_currentIndex == 3) {
-//       Navigator.pushReplacementNamed(context, '/history');
-//     } else if (_currentIndex == 4) {
-//       Navigator.pushReplacementNamed(context, '/profile');
-//     }
-//   }
-// }

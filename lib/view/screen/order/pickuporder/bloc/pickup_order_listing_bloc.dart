@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
-import '../../../../../model/PickupOrderListingResponse.dart';
+import '../../../../../model/PickupOrderListingResponse_x.dart';
 import '../../../../../service/api_service.dart';
 
 part 'pickup_order_listing_event.dart';

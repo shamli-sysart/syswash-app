@@ -43,17 +43,18 @@ dependencies:
   flutter_bloc:
   equatable:
   shimmer:
-  url_launcher:
-  location:
   carousel_slider:
 
-  firebase_core:
-  firebase_messaging:
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.10
   map_launcher:
   flutter_svg:
-  geolocator:
+  google_nav_bar:
+
   geocoding:
   flutter_local_notifications:
+
+
 
 
 
@@ -106,6 +107,7 @@ flutter:
     - assets/logo/SYSWASH-LOGO 1.png
     - assets/logo/AppIcon.png
     - assets/slider/
+    - assets/logo/syswash.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:http/http.dart' as http;
-import '../model/PickupOrderListingResponse.dart';
+import '../model/PickupOrderListingResponse_x.dart';
 import '../model/delivery_listing_response.dart';
 import '../model/history_response.dart';
 import '../model/login_response.dart';
@@ -162,8 +162,57 @@ class ApiService {
       log("API>>>URL>>${AppUrls.pickuplist}$companyCode<<<REQ>>>${response.body}");
       if (response.statusCode == 200 || response.statusCode == 201) {
 
-        print(response.body);
-        return HistoryResponse.fromJson(json.decode(response.body));
+        Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        Map<String, dynamic> newResponse = {
+          "pickup": jsonResponse["pickup"].map((pickup) {
+            return {
+              "pickupassgnId": pickup["pickupassgnId"],
+              "pickupDate": pickup["pickupDate"],
+              "pickupCustomerId": pickup["pickupCustomerId"],
+              "pickupCustomerName": pickup["pickupCustomerName"],
+              "pickupCustomerArea": pickup["pickupCustomerArea"],
+              "pickupCustomerCode": pickup["pickupCustomerCode"],
+              "pickupCustomerPhno": pickup["pickupCustomerPhno"],
+              "pickupDriverid": pickup["pickupDriverid"],
+              "pickupDrivername": pickup["pickupDrivername"],
+              "pickupstatus": pickup["pickupstatus"],
+              "AssignedFrom": pickup["AssignedFrom"],
+              "pickupOrderId": pickup["pickupOrderId"],
+              "trash": pickup["trash"]
+            };
+          }).toList(),
+          "delivery": jsonResponse["delivery"].map((delivery) {
+            return {
+              "orderId": delivery["orderId"],
+              "deliveryassgn": delivery["deliveryassgn"].map((deliveryAssgn) {
+                return {
+                  "deliveryassgnId": deliveryAssgn["deliveryassgnId"],
+                  "deliveryDate": deliveryAssgn["deliveryDate"],
+                  "deliveryTime": deliveryAssgn["deliveryTime"],
+                  "deliveryCustomerId": deliveryAssgn["deliveryCustomerId"],
+                  "deliveryCustomerName": deliveryAssgn["deliveryCustomerName"],
+                  "deliveryCustomerArea": deliveryAssgn["deliveryCustomerArea"],
+                  "deliveryCustomerCode": deliveryAssgn["deliveryCustomerCode"],
+                  "deliveryCustomerPhno": deliveryAssgn["deliveryCustomerPhno"],
+                  "deliveryDriverid": deliveryAssgn["deliveryDriverid"],
+                  "deliveryDrivername": deliveryAssgn["deliveryDrivername"],
+                  "status": deliveryAssgn["status"],
+                  "paymentstatus": deliveryAssgn["paymentstatus"],
+                  "trash": deliveryAssgn["trash"],
+                  "deliveryInvoiceNo": deliveryAssgn["deliveryInvoiceNo"]
+                };
+              }).toList()
+            };
+          }).toList()
+        };
+
+
+        String newResponseBody = json.encode(newResponse);
+        return HistoryResponse.fromJson(json.decode(newResponseBody));
+
+        // print(response.body);
+        // return HistoryResponse.fromJson(json.decode(response.body));
       } else if (response.statusCode == 401) {
         return HistoryResponse(code: 401);
       } else {

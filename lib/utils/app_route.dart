@@ -10,8 +10,10 @@ import '../view/screen/history/history.dart';
 import '../view/screen/login/login_screen.dart';
 import '../view/screen/notification/message.dart';
 import '../view/screen/order/customerdetails/customer_details.dart';
+import '../view/screen/order/pickuporder/add_new_pickup.dart';
 import '../view/screen/order/pickuporder/pickuporder_listing.dart';
 
+import '../view/screen/profile/edit_profile.dart';
 import '../view/screen/profile/profile.dart';
 import '../view/screen/splash/splash_screen.dart';
 
@@ -32,30 +34,24 @@ Route onGenerateRoute(RouteSettings settings) {
     case "/pickupOrderListing":
       return _createPageRoute((context) => const PickupOrderListing());
     case "/customer_details":
-      return _createPageRoute((context) {
-        final Map<String, dynamic>? args = settings.arguments as Map<String, dynamic>?;
-        return CustomerDetailsOrder(
-          pickupassgnId: args?['pickupassgnId'] as String?,
-          pickupCustomerId: args?['pickupCustomerId'] as String?,
-        );
-      });
+
     case "/delivery":
       return _createPageRoute((context) => const Delivery());
     case "/profile":
       return _createPageRoute((context) => const Profile());
+    case "/editProfile":
+      return _createPageRoute((context) => const EditProfile());
+
+    case "/addnewpickup":
+      return _createPageRoute((context) => const AddNewPickup());
+
+
     case "/message":
       return _createPageRoute((context) => const Message(
       ));
 
 
-    case "/customDetailsDelivery":
-    return _createPageRoute((context) {
-    final Map<String, dynamic>? args = settings.arguments as Map<String, dynamic>?;
-     return CustomerDetailsDelivery(
-      orderId: args?['deliveryInvoiceNo'] as String?,
-       deliveryCustomerId: args?['deliveryCustomerId'] as String?,
-  );
-    });
+
 
 
       // return _createPageRoute((context) => CustomerDetailsDelivery(
@@ -67,6 +63,7 @@ Route onGenerateRoute(RouteSettings settings) {
     // Handle unknown routes here
       return _createPageRoute((context) => Container());
       // You can change this to a 404 page
+
   }
 }
 

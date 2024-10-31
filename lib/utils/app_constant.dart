@@ -4,6 +4,10 @@ String logo = 'assets/logo/SYSWASH-LOGO 1.png';
 String homeImageDelivery = 'assets/images/delivery2.jpg';
 String homeImagePick = 'assets/images/pickuporder.jpg';
 String logo1='assets/logo/AppIcon.png';
+String logo2= 'assets/logo/syswash.png';
+String wash= 'assets/images/washing.png';
+String pick= 'assets/images/pickupdrive.png';
+String bell= 'assets/images/Bell.png';
 
 
 
